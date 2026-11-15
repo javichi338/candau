@@ -1,0 +1,45 @@
+PRAGMA journal_mode=WAL;
+
+CREATE TABLE logsBle (
+  id         INTEGER PRIMARY KEY AUTOINCREMENT,
+  fecha      TEXT NOT NULL DEFAULT (datetime('now')),
+  evento     TEXT NOT NULL,
+  resultado  TEXT,
+  idlock     INTEGER,
+  idUser     INTEGER,
+  idReserva  INTEGER,
+  clavefirma TEXT,
+  msg        TEXT
+);
+
+CREATE TABLE logsExpress (
+  id           INTEGER PRIMARY KEY AUTOINCREMENT,
+  fecha        TEXT NOT NULL DEFAULT (datetime('now')),
+  evento       TEXT NOT NULL,
+  resultado    TEXT,
+  idlock       INTEGER,
+  clavePublica TEXT,
+  msg          TEXT
+);
+
+CREATE TRIGGER impedirBorradosBle BEFORE DELETE ON logsBle
+WHEN OLD.fecha >= datetime('now', '-7 days')
+BEGIN
+  SELECT RAISE(ABORT, 'Operacion denegada. Se debe mantener un historial minimo de 7 dias');
+END;
+
+CREATE TRIGGER impedirModificacionesBle BEFORE UPDATE ON logsBle
+BEGIN
+  SELECT RAISE(ABORT, 'Operacion denegada. Los registros son inmutables.');
+END;
+
+CREATE TRIGGER impedirBorradosExpress BEFORE DELETE ON logsExpress
+WHEN OLD.fecha >= datetime('now', '-7 days')
+BEGIN
+  SELECT RAISE(ABORT, 'Operacion denegada. Se debe mantener un historial minimo de 7 dias');
+END;
+
+CREATE TRIGGER impedirModificacionesExpress BEFORE UPDATE ON logsExpress
+BEGIN
+  SELECT RAISE(ABORT, 'Operacion denegada. Los registros son inmutables.');
+END;

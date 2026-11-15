@@ -1,0 +1,15 @@
+[Unit]
+Description=Candado Express REST API
+After=network.target 
+
+[Service]
+Type=simple
+User=root
+WorkingDirectory=/opt/candado
+ExecStart=/usr/bin/node /opt/candado/server.js
+Restart=always
+RestartSec=5
+ReadWritePaths=/opt/candado
+
+[Install]
+WantedBy=multi-user.target

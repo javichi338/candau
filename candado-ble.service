@@ -1,0 +1,15 @@
+[Unit]
+Description=Candado BLE GATT Listener
+After=bluetooth.service candado-express.service
+PartOf=bluetooth.service
+
+[Service]
+Type=simple
+User=root
+WorkingDirectory=/opt/candado
+ExecStart=/opt/candado/venv/bin/python /opt/candado/candado-ble.py
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target
