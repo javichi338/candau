@@ -10,6 +10,7 @@ ExecStart=/usr/bin/node /opt/candado/server.js
 Restart=always
 RestartSec=5
 ReadWritePaths=/opt/candado
+Environment=NODE_EXTRA_CA_CERTS=/opt/candado/etc/server.crt
 
 [Install]
 WantedBy=multi-user.target

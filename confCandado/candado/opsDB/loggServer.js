@@ -1,5 +1,5 @@
 const sqlite3 = require('sqlite3');
-const LOGS_FILE = "/opt/candado/logs.db";
+const LOGS_FILE = "/opt/candado/logs/logs.db";
 
 
 function registerLog(action, result, lockid = null, clavePublica = null, msg = null) {

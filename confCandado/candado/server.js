@@ -8,8 +8,8 @@ const { registerLog, exportarLogs } = require('./opsDB/loggServer');
 const execFilePromise = util.promisify(execFile);
 
 
-const CONFIG_FILE = path.join(__dirname, '/opt/candado/etc/configCandau.json');
-const CLIENT_FILE = path.join(__dirname, 'configWSClient.json');
+const CONFIG_FILE = '/opt/candado/etc/configCandau.json';
+const CONFIGSOCKET_FILE = '/opt/candado/etc/configSocket.json';
 const MASTER_KEY = "PTISERVER";
  
 const BACKOFF_MIN_MS = 1000;
@@ -151,11 +151,14 @@ async function aplicarConfig(initialConf) {
     const infoserver = { id, UUID: crypto.randomUUID(), BLE_NAME: `Candado-n${id}` };
 
     const config = {
-      ...initialConf,
+      lockId: initialConf.lockId,
+      publicKey: initialConf.publicKey,
       UUID: infoserver.UUID,
-      nameBLE: infoserver.BLE_NAME,
+      nameBLE: infoserver.BLE_NAME
     };
     fs.writeFileSync(CONFIG_FILE, JSON.stringify(config, null, 2), { mode: 0o600 });
+
+    guardarTokenDispositiu(initialConf.secretKey);
 
     const err = await actualitzarNomBluetooth(id);
     if (err) {
@@ -186,7 +189,7 @@ async function obtenirLogs() {
     }
 
     const config = JSON.parse(fs.readFileSync(CONFIG_FILE, 'utf8'));
-    const KEY_LOGS = config.secretKey;
+    const KEY_LOGS = JSON.parse(fs.readFileSync(CONFIGSOCKET_FILE, 'utf8'))['x-device-token'];
 
     if (!KEY_LOGS) {
       return denegar(ACCION, 500, 'Error: no se encontro la clave para logs en el fichero de configuracion');
@@ -196,13 +199,13 @@ async function obtenirLogs() {
     if (logs === "ERROR") {
       return denegar(ACCION, 500, 'Error al obtener logs antiguos');
     }
-    const dades = {
+    const dades = JSON.stringify({
       lockId: config.lockId,
       logs: logs
-    };
+    });
 
     const firma = crypto.createHmac('sha256', KEY_LOGS)
-      .update(JSON.stringify(dades))
+      .update(dades,'utf8')
       .digest('hex');
 
     const payload = { dades, firma };
@@ -227,9 +230,9 @@ const RUTES = {
  
 
 function carregarClientConfig() {
-  const cfg = JSON.parse(fs.readFileSync(CLIENT_FILE, 'utf8'));
+  const cfg = JSON.parse(fs.readFileSync(CONFIGSOCKET_FILE, 'utf8'));
   if (typeof cfg.backendUrl !== 'string' || !cfg.backendUrl) {
-    throw new Error('Falta backendUrl a ' + CLIENT_FILE);
+    throw new Error('Falta backendUrl a ' + CONFIGSOCKET_FILE);
   }
   if (!cfg.backendUrl.startsWith('wss://') && process.env.ALLOW_INSECURE !== '1') {
     throw new Error('backendUrl ha de ser wss:// (ALLOW_INSECURE=1 només per a proves)');
@@ -238,9 +241,9 @@ function carregarClientConfig() {
 }
  
 function guardarTokenDispositiu(token) {
-  const cfg = JSON.parse(fs.readFileSync(CLIENT_FILE, 'utf8'));
+  const cfg = JSON.parse(fs.readFileSync(CONFIGSOCKET_FILE, 'utf8'));
   cfg['x-device-token'] = token;
-  fs.writeFileSync(CLIENT_FILE, JSON.stringify(cfg, null, 2), { mode: 0o600 });
+  fs.writeFileSync(CONFIGSOCKET_FILE, JSON.stringify(cfg, null, 2), { mode: 0o600 });
 }
  
 let backoff = BACKOFF_MIN_MS;

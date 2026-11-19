@@ -1,8 +1,12 @@
 import asyncio
 import json
 import hashlib
-from opsDB.loggBle import registerLog
-from testCred import validarCredencial
+from confAutoCandado.confCandado.candado.opsDB.loggBle import registerLog
+from confAutoCandado.confCandado.candado.testCred import validarCredencial
+import RPi.GPIO as GPIO
+
+LED_VERMELL = 16
+LED_VERD = 18 ## PIN RASBERRY LED
 
 from bless import (
     BlessServer,
@@ -15,6 +19,22 @@ UUID_CANDADO = ""
 UUID_SERVICIO = "076f3d07-7704-4a7c-9128-2ba5ad77de90"
 
 server = None
+
+tarea_led = None
+
+async def secuencia_apertura():
+    try:
+        GPIO.output(LED_VERMELL, GPIO.LOW)
+        GPIO.output(LED_VERD, GPIO.HIGH)
+        await asyncio.sleep(5)                   
+        for _ in range(5):                       
+            GPIO.output(LED_VERD, GPIO.LOW)
+            await asyncio.sleep(0.1)
+            GPIO.output(LED_VERD, GPIO.HIGH)
+            await asyncio.sleep(0.1)
+    finally:                                      
+        GPIO.output(LED_VERD, GPIO.LOW)
+        GPIO.output(LED_VERMELL, GPIO.HIGH)
 
 def resumen(texto: str) -> str:
     return hashlib.sha256(texto.encode("utf-8")).hexdigest()[:16]
@@ -39,9 +59,20 @@ def on_write(characteristic, value, **kwargs):
     characteristic.value = bytearray(json.dumps(res).encode("utf-8"))
     server.update_value(UUID_SERVICIO, UUID_CANDADO)  
     
-    # LOGICA FISICA CANDADO encender led ns
+    # LOGICA FISICA CANDADO 
+    global tarea_led
+    if resultado.get("code") == 200:
+        if tarea_led and not tarea_led.done():
+            tarea_led.cancel()                      
+        tarea_led = asyncio.get_running_loop().create_task(secuencia_apertura())
+
 
 async def main():
+
+    GPIO.setmode(GPIO.BOARD)
+    GPIO.setup(LED_VERMELL,GPIO.OUT)
+    GPIO.setup(LED_VERD,GPIO.OUT)
+    GPIO.output(LED_VERMELL,GPIO.HIGH)
     
     global server,UUID_CANDADO
     try:

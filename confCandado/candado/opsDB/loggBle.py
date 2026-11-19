@@ -1,6 +1,6 @@
-import sqlite3,sys
+import sqlite3
 
-LOGS_FILE = "/opt/candado/logs.db"
+LOGS_FILE = "/opt/candado/logs/logs.db"
 
 
 def registerLog(action, res=None, lockid=None, idUser=None, idReserva=None, clavefirma=None, msg=None):
