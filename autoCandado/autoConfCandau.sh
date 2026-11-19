@@ -42,7 +42,7 @@ install -m 644 -o root -g root \
 
 #instalacio BD
 mkdir -p "$DEST/logs"
-sudo sqlite3 /opt/candado/logs/logs.db <<'EOF' 
+sqlite3 /opt/candado/logs/logs.db <<'EOF' 
 PRAGMA journal_mode=WAL;
 
 CREATE TABLE logsBle (
@@ -91,7 +91,8 @@ END;
 EOF
 
 #depencencies serveis
-(cd "$DEST" && npm install)
+(cd "$DEST" && npm ci --omit=dev)
+
 python3 -m venv --system-site-packages "$DEST/venv"
 "$DEST/venv/bin/pip" install bless pyjwt cryptography rpi-lgpio
 
