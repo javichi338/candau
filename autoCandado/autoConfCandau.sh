@@ -12,11 +12,9 @@ if [ $# != 4 ]; then
     exit 1
 fi
 
-REPO_URL="https://github.com/javichi338/candau.git"
 DEST="/opt/candado"
 SYSTEM_SERVICES="/etc/systemd/system/" 
 TMP_DIR="$(mktemp -d)"
-USUARIO="pti"    
 
 backendurl=$1
 pkConfigure="$(cat "$2")"
@@ -24,26 +22,26 @@ serverCrt=$3
 tokenEnroll=$4
 
 apt-get update
-apt-get install -y git nodejs npm python3-venv python3-dbus bluez sqlite3 \
+apt-get install -y nodejs npm python3-venv python3-dbus bluez sqlite3 \
     swig python3-dev build-essential liblgpio-dev
 
-git clone --depth 1 "$REPO_URL" "$TMP_DIR"
+curl -sL "https://github.com/javichi338/candau/archive/refs/heads/main.tar.gz" | tar -xz -C "$TMP_DIR" --strip-components=2 candau-main/confCandado
 
+systemctl stop candado-ble candado-express 2>/dev/null || true
 rm -rf "$DEST"
 
 #distrubicio arxius
 cp -a "$TMP_DIR/candado" "$DEST"
-chown -R root:root "$DEST"
+
+cp -a "$serverCrt" "$DEST/etc"
 
 install -m 644 -o root -g root \
   "$TMP_DIR/candado-ble.service" \
   "$TMP_DIR/candado-express.service" \
   "$SYSTEM_SERVICES"
 
-chown -R "$USUARIO":"$USUARIO" "$DEST"
-
 #instalacio BD
-apt install -y sqlite3
+mkdir -p "$DEST/logs"
 sudo sqlite3 /opt/candado/logs/logs.db <<'EOF' 
 PRAGMA journal_mode=WAL;
 
@@ -103,11 +101,11 @@ fs.writeFileSync(e.ETC + "/configSocket.json", JSON.stringify(
   { backendUrl: e.BACKEND_URL, "x-enroll-token": e.ENROLL, "x-device-token": "" }, null, 2));
 fs.writeFileSync(e.ETC + "/configCandau.json", JSON.stringify({ publicKey: e.PK }, null, 2));
 '
+chmod 700 "$DEST/etc"
 chmod 600 "$DEST/etc/"*
+chmod 700 "$DEST/logs"
 
 rm -rf "$TMP_DIR"
-apt-get purge -y git
-apt-get autoremove -y
 
 systemctl daemon-reload
 systemctl enable --now candado-express.service candado-ble.service
