@@ -16,6 +16,7 @@ DEST="/opt/candado"
 SYSTEM_SERVICES="/etc/systemd/system/" 
 TMP_DIR="$(mktemp -d)"
 
+SSH_USER="pti"
 backendurl=$1
 pkConfigure="$(cat "$2")"
 serverCrt=$3
@@ -102,9 +103,9 @@ fs.writeFileSync(e.ETC + "/configSocket.json", JSON.stringify(
   { backendUrl: e.BACKEND_URL, "x-enroll-token": e.ENROLL, "x-device-token": "" }, null, 2));
 fs.writeFileSync(e.ETC + "/configCandau.json", JSON.stringify({ publicKey: e.PK }, null, 2));
 '
-chmod 700 "$DEST/etc"
-chmod 600 "$DEST/etc/"*
-chmod 700 "$DEST/logs"
+chgrp -R "$SSH_USER" "$DEST"
+chmod -R ug+rwX,o-rwx "$DEST"            
+find "$DEST" -type d -exec chmod g+s {}
 
 rm -rf "$TMP_DIR"
 
