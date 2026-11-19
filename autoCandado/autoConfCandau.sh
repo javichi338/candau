@@ -33,6 +33,7 @@ rm -rf "$DEST"
 #distrubicio arxius
 cp -a "$TMP_DIR/candado" "$DEST"
 
+mkdir -p "$DEST/etc" "$DEST/logs"
 cp -a "$serverCrt" "$DEST/etc"
 
 install -m 644 -o root -g root \
@@ -41,7 +42,6 @@ install -m 644 -o root -g root \
   "$SYSTEM_SERVICES"
 
 #instalacio BD
-mkdir -p "$DEST/logs"
 sqlite3 /opt/candado/logs/logs.db <<'EOF' 
 PRAGMA journal_mode=WAL;
 
