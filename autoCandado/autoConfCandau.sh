@@ -69,9 +69,9 @@ CREATE TABLE logsExpress (
 );
 
 CREATE TRIGGER impedirBorradosBle BEFORE DELETE ON logsBle
-WHEN OLD.fecha >= datetime('now', '-7 days')
+WHEN OLD.fecha >= datetime('now', '-1 days')
 BEGIN
-  SELECT RAISE(ABORT, 'Operacion denegada. Se debe mantener un historial minimo de 7 dias');
+  SELECT RAISE(ABORT, 'Operacion denegada. Se debe mantener un historial minimo de 1 dias');
 END;
 
 CREATE TRIGGER impedirModificacionesBle BEFORE UPDATE ON logsBle
@@ -80,9 +80,9 @@ BEGIN
 END;
 
 CREATE TRIGGER impedirBorradosExpress BEFORE DELETE ON logsExpress
-WHEN OLD.fecha >= datetime('now', '-7 days')
+WHEN OLD.fecha >= datetime('now', '-1 days')
 BEGIN
-  SELECT RAISE(ABORT, 'Operacion denegada. Se debe mantener un historial minimo de 7 dias');
+  SELECT RAISE(ABORT, 'Operacion denegada. Se debe mantener un historial minimo de 1 dias');
 END;
 
 CREATE TRIGGER impedirModificacionesExpress BEFORE UPDATE ON logsExpress
@@ -105,7 +105,7 @@ fs.writeFileSync(e.ETC + "/configCandau.json", JSON.stringify({ publicKey: e.PK 
 '
 chgrp -R "$SSH_USER" "$DEST"
 chmod -R ug+rwX,o-rwx "$DEST"            
-find "$DEST" -type d -exec chmod g+s {}
+find "$DEST" -type d -exec chmod g+s {} +
 
 rm -rf "$TMP_DIR"
 
