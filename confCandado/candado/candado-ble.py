@@ -1,8 +1,8 @@
 import asyncio
 import json
 import hashlib
-from confAutoCandado.confCandado.candado.opsDB.loggBle import registerLog
-from confAutoCandado.confCandado.candado.testCred import validarCredencial
+from opsDB.loggBle import registerLog
+from testCred import validarCredencial
 import RPi.GPIO as GPIO
 
 LED_VERMELL = 16
