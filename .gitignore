@@ -1,0 +1,11 @@
+node_modules/
+venv/
+__pycache__/
+*.pyc
+
+confCandado/candado/etc/*.json
+confCandado/candado/logs/
+*.db
+*.db-wal
+*.db-shm
+*.log
