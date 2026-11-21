@@ -60,7 +60,7 @@ function validarEstructuraConfig(data) {
   if (!data.publicKey || typeof data.publicKey !== 'string') {
     return 'El campo publicKey es obligatorio y debe ser un string';
   }
-  if (typeof data.secretKey !== 'string' || !/^[0-9a-f]{64}$/i.test(data.secretKey)) {
+  if (typeof data.secretKey !== 'string' || !/^[0-9a-f]{64}$/i.test(data.secretKey) ) {
     return 'El campo secretKey debe ser un string hexadecimal de 64 caracteres (32 bytes)';
   }
   if (typeof data.firmaConf !== 'string' || !data.firmaConf) {
@@ -153,12 +153,11 @@ async function aplicarConfig(initialConf) {
     const config = {
       lockId: initialConf.lockId,
       publicKey: initialConf.publicKey,
+      secretKey: initialConf.secretKey,
       UUID: infoserver.UUID,
       nameBLE: infoserver.BLE_NAME
     };
     fs.writeFileSync(CONFIG_FILE, JSON.stringify(config, null, 2), { mode: 0o600 });
-
-    guardarTokenDispositiu(initialConf.secretKey);
 
     const err = await actualitzarNomBluetooth(id);
     if (err) {
@@ -189,9 +188,9 @@ async function obtenirLogs() {
     }
 
     const config = JSON.parse(fs.readFileSync(CONFIG_FILE, 'utf8'));
-    const KEY_LOGS = JSON.parse(fs.readFileSync(CONFIGSOCKET_FILE, 'utf8'))['x-device-token'];
+    const key = config.secretKey
 
-    if (!KEY_LOGS) {
+    if (!key) {
       return denegar(ACCION, 500, 'Error: no se encontro la clave para logs en el fichero de configuracion');
     }
 
@@ -204,15 +203,15 @@ async function obtenirLogs() {
       logs: logs
     });
 
-    const firma = crypto.createHmac('sha256', KEY_LOGS)
+    const firma = crypto.createHmac('sha256', key)
       .update(dades,'utf8')
       .digest('hex');
 
     const payload = { dades, firma };
 
     const nombre = `logs_${new Date().toISOString().replace(/[:.]/g, '-')}.json`;
-    const destino = path.join(__dirname, nombre);
-    fs.writeFileSync(destino, JSON.stringify(payload));
+    const destino = path.join('/opt/candado/etc', nombre);
+    fs.writeFileSync(destino, JSON.stringify(payload),{mode: 0o600});
   
     registerLog(ACCION, 'permitido', config.lockId, null, 'Logs antiguos obtenidos correctamente');
     return { status: 200, body: { status: 'ok', logs: payload } };
