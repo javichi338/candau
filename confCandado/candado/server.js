@@ -147,7 +147,7 @@ async function aplicarConfig(initialConf) {
       return denegar(ACCION, 400, configInvalid);
     }
 
-    const id = initialConf.idLock;
+    const id = initialConf.lockId;
     const infoserver = { id, UUID: crypto.randomUUID(), BLE_NAME: `Candado-n${id}` };
 
     const config = {
