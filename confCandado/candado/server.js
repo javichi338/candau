@@ -84,7 +84,7 @@ function validarEstructuraConfig(data) {
   }
 
   const firmado = JSON.stringify({
-    idLock: data.lockId,
+    lockId: data.lockId,
     publicKey: data.publicKey,
     secretKey: data.secretKey,
   });
