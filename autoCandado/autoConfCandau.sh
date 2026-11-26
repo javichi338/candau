@@ -67,28 +67,6 @@ CREATE TABLE logsExpress (
   clavePublica TEXT,
   msg          TEXT
 );
-
-CREATE TRIGGER impedirBorradosBle BEFORE DELETE ON logsBle
-WHEN OLD.fecha >= datetime('now', '-1 days')
-BEGIN
-  SELECT RAISE(ABORT, 'Operacion denegada. Se debe mantener un historial minimo de 1 dias');
-END;
-
-CREATE TRIGGER impedirModificacionesBle BEFORE UPDATE ON logsBle
-BEGIN
-  SELECT RAISE(ABORT, 'Operacion denegada. Los registros son inmutables.');
-END;
-
-CREATE TRIGGER impedirBorradosExpress BEFORE DELETE ON logsExpress
-WHEN OLD.fecha >= datetime('now', '-1 days')
-BEGIN
-  SELECT RAISE(ABORT, 'Operacion denegada. Se debe mantener un historial minimo de 1 dias');
-END;
-
-CREATE TRIGGER impedirModificacionesExpress BEFORE UPDATE ON logsExpress
-BEGIN
-  SELECT RAISE(ABORT, 'Operacion denegada. Los registros son inmutables.');
-END;
 EOF
 
 #depencencies serveis

@@ -48,8 +48,8 @@ function exportarLogs() {
                 con.configure('busyTimeout', 5000);
                 await run('BEGIN IMMEDIATE');
 
-                const logsBLE = await all("DELETE FROM logsBle WHERE fecha < datetime('now', '-1 days') RETURNING *");
-                const logsExpress = await all("DELETE FROM logsExpress WHERE fecha < datetime('now', '-1 days') RETURNING *");
+                const logsBLE = await all("DELETE FROM logsBle WHERE fecha > datetime('now', '-1 days') RETURNING *");
+                const logsExpress = await all("DELETE FROM logsExpress WHERE fecha > datetime('now', '-1 days') RETURNING *");
 
                 await run('COMMIT');
                 resolve({ logsBLE, logsExpress });
