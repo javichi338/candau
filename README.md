@@ -10,6 +10,6 @@ curl -sL https://github.com/javichi338/candau/archive/refs/heads/main.tar.gz | t
 
 # CAL AFEGIR EL ENROLL TOKEN PER CADA CANDAU
 chmod +x autoConfCandau.sh
-sudo ./autoConfCandau.sh "wss://nattech.fib.upc.edu:40571/api/ws/locks" pub.pem server.crt "fe8dd338970e4ec84d2be8a045ab8825ac6bbf07b307b7b6992e2e4edd83d365"
+sudo ./autoConfCandau.sh "wss://nattech.fib.upc.edu:40571/api/ws/locks" pub.pem server.crt "11ef98f51f12f0e023891361efb2981a6a1395b11385550beec3d02089c5a306"
 
 cd ~ && rm -rf "$TMP"

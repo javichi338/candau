@@ -199,7 +199,7 @@ async function obtenirLogs() {
       return denegar(ACCION, 500, 'Error al obtener logs antiguos');
     }
     const dades = JSON.stringify({
-      LockId: config.idLock,
+      lockId: config.idLock,
       logs: logs
     });
 
