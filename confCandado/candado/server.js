@@ -151,7 +151,7 @@ async function aplicarConfig(initialConf) {
     const infoserver = { id, UUID: crypto.randomUUID(), BLE_NAME: `Candado-n${id}` };
 
     const config = {
-      idLock: initialConf.idLock,
+      idLock: initialConf.lockId,
       publicKey: initialConf.publicKey,
       secretKey: initialConf.secretKey,
       UUID: infoserver.UUID,
