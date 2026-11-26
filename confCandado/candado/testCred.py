@@ -11,7 +11,7 @@ def resultado(code, result, message=None, claims=None):
         r["message"] = message
     if claims:
         r["idReserva"] = claims.get("idReserva") if esNumero(claims.get("idReserva")) else None
-        r["lockId"] = claims.get("lockId") if esNumero(claims.get("lockId")) else None
+        r["idLock"] = claims.get("idLock") if esNumero(claims.get("idLock")) else None
         r["idUser"] = claims.get("idUser")[:128] if isinstance(claims.get("idUser"), str) else None
     return r
 
@@ -32,10 +32,10 @@ def validarCredencial(credencial_jwt: str) -> dict:
         return resultado(500, "FALLO AL VALIDAR: ERROR_INESPERADO", str(err))
 
     publicKey = config.get("publicKey")
-    lockId = config.get("lockId")
-    if not publicKey or not lockId:
+    idLock = config.get("idLock")
+    if not publicKey or not idLock:
         return resultado(503, "FALLO AL VALIDAR: NO_CONFIG", "El candado no esta configurado")
-    if not esNumero(lockId):
+    if not esNumero(idLock):
         return resultado(500, "FALLO AL VALIDAR: CONFIG_INVALIDA", "El fichero config no es valido")
 
     try:
@@ -56,31 +56,31 @@ def validarCredencial(credencial_jwt: str) -> dict:
     except Exception as err:
         return resultado(500, "FALLO AL VALIDAR: ERROR_INESPERADO", str(err))
 
-    claves_permitidas = {"idReserva", "lockId", "idUser", "inicioReserva", "finReserva"}
+    claves_permitidas = {"idReserva", "idLock", "idUser", "ini", "fin"}
 
     if set(credencial.keys()) != claves_permitidas:
         return resultado(422, "FALLO AL VALIDAR: CAMPOS_NO_PERMITIDOS",
                           f"La credencial solo permite exactamente los campos: {', '.join(claves_permitidas)}", credencial)
 
-    if not esNumero(credencial.get("idReserva")) or not esNumero(credencial.get("lockId")):
-        return resultado(400, "FALLO AL VALIDAR: FORMATO_INCORRECTO", "idReserva y lockId deben ser numeros", credencial)
+    if not esNumero(credencial.get("idReserva")) or not esNumero(credencial.get("idLock")):
+        return resultado(400, "FALLO AL VALIDAR: FORMATO_INCORRECTO", "idReserva y idLock deben ser numeros", credencial)
     if not isinstance(credencial.get("idUser"), str) or not credencial.get("idUser") or len(credencial.get("idUser")) > 128:
         return resultado(400, "FALLO AL VALIDAR: FORMATO_INCORRECTO", "idUser tiene que ser un string", credencial)
-    if credencial.get("lockId") != lockId:
-        return resultado(403, "FALLO AL VALIDAR: CANDADO_INCORRECTO", f"La credencial solo sirve para la puerta {lockId}", credencial)
+    if credencial.get("idLock") != idLock:
+        return resultado(403, "FALLO AL VALIDAR: CANDADO_INCORRECTO", f"La credencial solo sirve para la puerta {idLock}", credencial)
 
-    inicio = credencial["inicioReserva"]
-    fin = credencial["finReserva"]
+    ini = credencial["ini"]
+    fin = credencial["fin"]
 
-    if not esNumero(inicio) or not esNumero(fin):
-        return resultado(400, "FALLO AL VALIDAR: FORMATO_INCORRECTO", "inicioReserva y finReserva deben ser numeros", credencial)
+    if not esNumero(ini) or not esNumero(fin):
+        return resultado(400, "FALLO AL VALIDAR: FORMATO_INCORRECTO", "ini y fin deben ser numeros", credencial)
 
-    if inicio >= fin:
+    if ini >= fin:
         return resultado(422, "FALLO AL VALIDAR: VENTANA_INVALIDA", "El fin de la reserva debe ser posterior al inicio", credencial)
 
     ahora = time.time()
 
-    if ahora < inicio - MARGEN_TIEMPO:
+    if ahora < ini - MARGEN_TIEMPO:
         return resultado(403, "FALLO AL VALIDAR: ANTES_DE_TIEMPO", "La reserva aun no ha empezado", credencial)
     if ahora >= fin + MARGEN_TIEMPO:
         return resultado(410, "FALLO AL VALIDAR: RESERVA_FINALIZADA", "La reserva ha terminado", credencial)

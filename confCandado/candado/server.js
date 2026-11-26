@@ -55,7 +55,7 @@ function validarEstructuraConfig(data) {
   }
 
   if (!Number.isSafeInteger(data.lockId) || data.lockId <= 0) {
-    return 'El campo lockId es obligatorio y debe ser un entero positivo';
+    return 'El campo idLock es obligatorio y debe ser un entero positivo';
   }
   if (!data.publicKey || typeof data.publicKey !== 'string') {
     return 'El campo publicKey es obligatorio y debe ser un string';
@@ -84,7 +84,7 @@ function validarEstructuraConfig(data) {
   }
 
   const firmado = JSON.stringify({
-    lockId: data.lockId,
+    idLock: data.lockId,
     publicKey: data.publicKey,
     secretKey: data.secretKey,
   });
@@ -104,9 +104,9 @@ function validarEstructuraConfig(data) {
   return null;
 }
 
-async function actualitzarNomBluetooth(lockId) {
+async function actualitzarNomBluetooth(idLock) {
 
-  const nouNom = `Candado-n${lockId}`;
+  const nouNom = `Candado-n${idLock}`;
   try {
     await execFilePromise('hostnamectl', ['set-hostname', nouNom]);
     await execFilePromise('systemctl', ['restart', 'bluetooth']);
@@ -135,7 +135,7 @@ function desbloquejar(masterkey) {
     return { status: 200, body: { status: 'ok', esConfigurable: true, tiempo_restante: '30s' } };
 }
 
-// POST /config  (body: { lockId, publicKey, secretKey, firmaConf })
+// POST /config  (body: { idLock, publicKey, secretKey, firmaConf })
 async function aplicarConfig(initialConf) {
   const ACCION = 'ESTABLECER CONFIGURACION';
   try {
@@ -147,11 +147,11 @@ async function aplicarConfig(initialConf) {
       return denegar(ACCION, 400, configInvalid);
     }
 
-    const id = initialConf.lockId;
+    const id = initialConf.idLock;
     const infoserver = { id, UUID: crypto.randomUUID(), BLE_NAME: `Candado-n${id}` };
 
     const config = {
-      lockId: initialConf.lockId,
+      idLock: initialConf.idLock,
       publicKey: initialConf.publicKey,
       secretKey: initialConf.secretKey,
       UUID: infoserver.UUID,
@@ -199,7 +199,7 @@ async function obtenirLogs() {
       return denegar(ACCION, 500, 'Error al obtener logs antiguos');
     }
     const dades = JSON.stringify({
-      lockId: config.lockId,
+      idLock: config.idLock,
       logs: logs
     });
 
@@ -213,7 +213,7 @@ async function obtenirLogs() {
     const destino = path.join('/opt/candado/etc', nombre);
     fs.writeFileSync(destino, JSON.stringify(payload),{mode: 0o600});
   
-    registerLog(ACCION, 'permitido', config.lockId, null, 'Logs antiguos obtenidos correctamente');
+    registerLog(ACCION, 'permitido', config.idLock, null, 'Logs antiguos obtenidos correctamente');
     return { status: 200, body: { status: 'ok', logs: payload } };
 
   } catch (error) {

@@ -42,20 +42,19 @@ def resumen(texto: str) -> str:
 def on_write(characteristic, value, **kwargs):
     
     credencial = bytes(value).decode("utf-8", errors="replace")
-    
     resultado = validarCredencial(credencial)
     
     registerLog(
         "VALIDAR CREDENCIAL", 
         resultado.get("result"), 
-        resultado.get("lockId"), 
+        resultado.get("idLock"), 
         resultado.get("idUser"),
         resultado.get("idReserva"), 
         resumen(credencial),     
         resultado.get("message")
     )
 
-    res = {"code": resultado.get("code"), "status": resultado.get("result"), "message": resultado.get("message")}
+    res = {"status": resultado.get("code"), "message": resultado.get("message")}
     characteristic.value = bytearray(json.dumps(res).encode("utf-8"))
     server.update_value(UUID_SERVICIO, UUID_CANDADO)  
     
@@ -77,7 +76,7 @@ async def main():
     global server,UUID_CANDADO
     try:
         with open(CONFIG_FILE) as f:
-            config = json.load(f); 
+            config = json.load(f)
             name_ble = config['nameBLE']
             UUID_CANDADO = config['UUID']
             message = f"Anunciando dispositivo BLE ({name_ble})"
@@ -104,7 +103,7 @@ async def main():
 
     await server.start()
     
-    registerLog('ANUNCIAR DISPOSITIVO BLE', res='permitido', lockid=config['lockId'], clavefirma=resumen(config['publicKey']), msg=message)
+    registerLog('ANUNCIAR DISPOSITIVO BLE', res='permitido', lockid=config['idLock'], clavefirma=resumen(config['publicKey']), msg=message)
     await asyncio.Event().wait()      
 
 
